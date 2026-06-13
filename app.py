@@ -652,5 +652,24 @@ Contact Emails:
         return {"status": "error", "message": f"An error occurred: {str(e)}"}, 500
 
 
+@app.route('/debug/send-test')
+def debug_send_test():
+    """Debug route: attempt to send a test email to the configured contact addresses
+    and return any exception text so we can diagnose deployment SMTP issues.
+    Remove or protect this route in production.
+    """
+    subject = "[Debug] Test Email from Loan Prediction System"
+    body = "This is a test message from the deployed Loan Prediction System (debug route)."
+    try:
+        msg = Message(subject=subject, recipients=CONTACT_EMAILS, body=body)
+        mail.send(msg)
+        return {"status": "success", "message": f"Test email sent to: {CONTACT_EMAILS}"}, 200
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        print("Debug send-test failed:\n", tb)
+        return {"status": "error", "message": str(e), "trace": tb}, 500
+
+
 if __name__ == "__main__":
     app.run(debug=True)
