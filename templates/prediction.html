@@ -475,6 +475,73 @@
             }
         }
 
+        /* Mobile-only responsive tweaks - affects screens <= 768px only */
+        @media (max-width: 768px) {
+            /* Stack result stats into single column */
+            .premium-result .grid, .premium-result .grid.gap-2 {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Make action buttons full width and stacked */
+            .result-footer {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 0.75rem !important;
+                padding-top: 0.75rem !important;
+                border-top: none !important;
+            }
+
+            .result-footer .primary-btn,
+            .result-footer .secondary-btn,
+            .primary-btn.inline-flex,
+            .secondary-btn.inline-flex {
+                display: block !important;
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+
+            /* Make form grids single column on small screens */
+            .grid.gap-5, .grid.gap-8 {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Increase tappable areas */
+            .field-input, .field-select {
+                padding: 1rem !important;
+            }
+
+            /* Reduce max-width containers padding */
+            .max-w-7xl.mx-auto.px-4 {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+            /* Make cards truly full-width and increase spacing for readability */
+            .soft-card, .card-panel, .premium-result, .stats-card {
+                width: calc(100% - 1.5rem) !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
+                border-radius: 1rem !important;
+            }
+
+            /* Make result stat blocks more compact vertically */
+            .result-stat { padding: 0.75rem !important; }
+            .result-label { font-size: 0.66rem !important; }
+            .result-value { font-size: 1.2rem !important; }
+
+            /* Ensure timestamp sits above buttons, centered */
+            .result-timestamp { order: 2; text-align: center; margin-top: 0.25rem; }
+
+            /* Buttons block with comfortable height */
+            .result-footer .primary-btn, .result-footer .secondary-btn {
+                padding: 0.9rem 1rem !important;
+                font-size: 0.98rem !important;
+            }
+        }
+
         .gauge-chart {
             position: relative;
             width: 180px;
@@ -967,8 +1034,8 @@
                             <p class="mt-1 text-sm text-gray-600">Total Applications</p>
                         </div>
                     </div>
-                    <div style="margin-top: 20px; max-width: 380px; margin-left: auto; margin-right: auto;">
-                        <canvas id="statsChart"></canvas>
+                    <div style="margin-top: 20px; max-width: 240px; margin-left: auto; margin-right: auto;">
+                        <canvas id="statsChart" style="width:100%; height:auto; max-width:240px; display:block; margin:0 auto;" width="240" height="240"></canvas>
                     </div>
 
                     <!-- Smart approval rate bar -->
@@ -1476,6 +1543,9 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1,
+                    cutout: '50%',
                     plugins: {
                         legend: {
                             position: 'bottom'

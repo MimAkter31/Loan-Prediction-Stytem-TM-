@@ -7,6 +7,11 @@ import json
 import io
 import os
 import pickle
+from dotenv import load_dotenv
+
+# Load environment variables from a .env file (if present).
+# This lets you set MAIL_USERNAME and MAIL_PASSWORD locally and on Render.
+load_dotenv()
 import numpy as np
 from datetime import datetime
 from uuid import uuid4
@@ -15,20 +20,44 @@ from uuid import uuid4
 app = Flask(__name__)
 
 # Email Configuration
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'your-email@gmail.com')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', 'your-app-password')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
+# Read server/port/tls from environment when provided; keep sensible defaults.
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = str(os.environ.get('MAIL_USE_TLS', 'True')).lower() in ('1', 'true', 'yes')
 
+# IMPORTANT: Do NOT provide fallback defaults for credentials here.
+# They must come from environment variables or a .env file.
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+
+# Default sender falls back to the username if provided.
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER') or app.config['MAIL_USERNAME']
+
+# Validate essential email settings at startup and print a clear message if missing.
+print("MAIL USER:", app.config.get('MAIL_USERNAME'))
+print("MAIL PASSWORD SET:", bool(app.config.get('MAIL_PASSWORD')))
+
+missing = []
+if not app.config.get('MAIL_USERNAME'):
+    missing.append('MAIL_USERNAME')
+if not app.config.get('MAIL_PASSWORD'):
+    missing.append('MAIL_PASSWORD')
+
+if missing:
+    err = (
+        "ERROR: Missing required mail configuration: {}.\n"
+        "Set these in a .env file or your Render environment variables.\n"
+        "If you are using Gmail, create a Gmail 'App Password' and use it as MAIL_PASSWORD; "
+        "do NOT use your regular Gmail login password. See EMAIL_SETUP.md for steps."
+    ).format(', '.join(missing))
+    print(err)
+    raise RuntimeError(err)
+
+# Create Mail instance after validating configuration
 mail = Mail(app)
-print("MAIL USER:", app.config['MAIL_USERNAME'])
-print("MAIL PASSWORD SET:", bool(app.config['MAIL_PASSWORD']))
 
 HISTORY_FILE = os.path.join(os.path.dirname(__file__), "loan_history.json")
 CONTACT_EMAILS = [
-    'mimakter.de@gmail.com',
     'hello.tanim.bd@gmail.com'
 ]
 
@@ -638,7 +667,6 @@ Best regards,
 Loan Prediction System Team
 
 Contact Emails:
-- mimakter.de@gmail.com
 - hello.tanim.bd@gmail.com
 """
             )
